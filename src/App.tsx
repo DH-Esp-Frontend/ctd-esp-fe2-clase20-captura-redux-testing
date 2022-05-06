@@ -1,4 +1,3 @@
-import './App.css';
 import Movies from './features/movies/Movies';
 function App() {
 
