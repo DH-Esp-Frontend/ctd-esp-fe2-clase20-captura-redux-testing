@@ -5,6 +5,7 @@ import { RootState, AppThunk } from '../../app/store';
 export interface IMovie { 
     Title: string,
     Poster: string
+    imdbID: string
 }
 
 interface IState {
@@ -31,7 +32,11 @@ export const moviesSlice = createSlice({
   name: 'movies',
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
-  reducers: {} 
+  reducers: {
+    addFav(state, action: PayloadAction<string>){
+        const findMovie = state.movies.find(movie => movie.imdbID === action.payload)
+    }
+  } 
  });
 
 
