@@ -7,7 +7,7 @@ export interface IMovie {
     imdbID: string
 }
 
-interface IState {
+export interface IState {
     favs:  IMovie[],
     movies: IMovie[]
 
