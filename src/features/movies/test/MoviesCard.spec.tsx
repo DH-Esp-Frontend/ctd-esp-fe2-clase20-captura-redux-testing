@@ -1,37 +1,41 @@
 import React from 'react'
-import {store} from "../../../app/store"
-import {  render, screen, waitFor } from '@testing-library/react'
+import {  render, screen } from '@testing-library/react'
 import MovieCard from '../MovieCard'
-import { IMovie } from '../moviesSlice'
 import userEvent from '@testing-library/user-event'
 import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
-import moviesReducer from "../moviesSlice"
-function renderRedux(component: React.ReactNode, { initialState = {favs: [], movies:[]} } = {}) {
-  const store = configureStore({ reducer: {movies: moviesReducer} });
+import moviesReducer, { IMovie }  from "../moviesSlice"
+import { moviesApi } from '../moviesAPI'
+
+
+function renderRedux(component: React.ReactNode, initialState = {movies: {favs: [] as IMovie[] , movies: [] as IMovie[]}}) {
+  const store = configureStore({ reducer: {movies: moviesReducer, moviesApi: moviesApi.reducer},  middleware: (getDefaultMiddleware) =>
+  getDefaultMiddleware().concat(moviesApi.middleware), preloadedState: initialState});
   return {
       ...render( <Provider store={store}>
         {component}
-      </Provider>)
+      </Provider>),
+      store
   }
 }
 const movie: IMovie = {Title: "Harry Potter", Poster:"any", imdbID:"5"}
 
+
 describe("MoviesCard", ()=>{
-    describe("onClick", ()=>{
-        renderRedux(<MovieCard data={movie}/>)
-        const state = store.getState().movies
-        const button = screen.getByRole("button")
-        it("should add the movie to the fav list correctly", async ()=>{
-            expect(state.favs.length).toBe(0)
-            await userEvent.click(button)
-            await waitFor(()=>{
-                expect(state.favs.length).toBe(1)})
+    describe("if the movie is not added", ()=>{
+      it("should add it to the fav list correctly", async ()=>{
+        const { store } =  renderRedux(<MovieCard data={movie}/>)
+          const button = screen.getByRole("button")
+          await userEvent.click(button)
+          expect(store.getState().movies.favs.length).toBe(1)
+          })
+    })
+    describe("if the movie is added", ()=>{
+      it("should remove it to the fav list correctly", async ()=>{
+        const { store } =  renderRedux(<MovieCard data={movie}/>, {movies: {favs: [movie], movies: []}})
+          const button = screen.getByRole("button")
+          await userEvent.click(button)
+          expect(store.getState().movies.favs.length).toBe(0)
         })
-        it("should remove the movie to the fav list correctly", async ()=>{
-            await userEvent.click(button)
-            await waitFor(()=>{
-                expect(state.favs.length).toBe(0)})
-            })
-        })
+    })
 })

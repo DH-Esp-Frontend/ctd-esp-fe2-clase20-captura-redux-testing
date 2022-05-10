@@ -1,4 +1,4 @@
-import { AiFillHeart as Fav, AiOutlineHeart as UnFav } from 'react-icons/ai';
+import { AiFillHeart as UnFav, AiOutlineHeart as Fav } from 'react-icons/ai';
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { addFav, deleteFav, IMovie } from './moviesSlice'
 import "./styles.css"
@@ -12,7 +12,7 @@ const MovieCard = ({data}: ICard) => {
   const favs = useAppSelector(state => state.movies.favs)
   const dispatch = useAppDispatch()
 
-  const isFav = favs.find(movie => movie.imdbID === data.imdbID)
+  const isFav = favs?.find(movie => movie.imdbID === data.imdbID)
   const handleFav = ()=>{
     if(!isFav) dispatch(addFav(data))
     if(isFav) dispatch(deleteFav(data.imdbID))
@@ -23,7 +23,7 @@ const MovieCard = ({data}: ICard) => {
       <div className='card-header'>
         <h3>{data.Title} </h3>
         <button onClick={handleFav} >
-          {isFav ? <Fav /> : <UnFav/> } 
+          {!isFav ? <Fav /> : <UnFav /> } 
         </button>
       </div>
       <img src={data.Poster} alt="movie-poster" />

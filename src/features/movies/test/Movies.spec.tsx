@@ -6,10 +6,12 @@ import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux'
 import Movies from '../Movies'
 import { render, screen } from '@testing-library/react';
+import { moviesApi } from '../moviesAPI';
 
 
 function renderRedux(component: React.ReactNode, { initialState = {favs: [], movies:[]} } = {}) {
-  const store = configureStore({ reducer: {movies: moviesReducer} });
+  const store = configureStore({ reducer: {movies: moviesReducer, moviesApi: moviesApi.reducer},  middleware: (getDefaultMiddleware) =>
+  getDefaultMiddleware().concat(moviesApi.middleware), });
   return {
       ...render( <Provider store={store}>
         {component}
