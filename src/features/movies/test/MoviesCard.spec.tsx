@@ -1,27 +1,13 @@
-import React from 'react'
-import {  render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import MovieCard from '../MovieCard'
 import userEvent from '@testing-library/user-event'
-import { Provider } from 'react-redux'
-import { configureStore } from '@reduxjs/toolkit'
-import moviesReducer, { IMovie }  from "../moviesSlice"
-import { moviesApi } from '../moviesAPI'
+import { renderRedux } from './test-utils'
+import { IMovie } from '../moviesSlice'
 
-
-function renderRedux(component: React.ReactNode, initialState = {movies: {favs: [] as IMovie[] , movies: [] as IMovie[]}}) {
-  const store = configureStore({ reducer: {movies: moviesReducer, moviesApi: moviesApi.reducer},  middleware: (getDefaultMiddleware) =>
-  getDefaultMiddleware().concat(moviesApi.middleware), preloadedState: initialState});
-  return {
-      ...render( <Provider store={store}>
-        {component}
-      </Provider>),
-      store
-  }
-}
 const movie: IMovie = {Title: "Harry Potter", Poster:"any", imdbID:"5"}
 
 
-describe("MoviesCard", ()=>{
+describe("MovieCard", ()=>{
     describe("if the movie is not added", ()=>{
       it("should add it to the fav list correctly", async ()=>{
         const { store } =  renderRedux(<MovieCard data={movie}/>)
