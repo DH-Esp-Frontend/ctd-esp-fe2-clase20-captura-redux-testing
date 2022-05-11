@@ -6,13 +6,14 @@ import "./styles.css"
 
 
 const Movies = () => {
-  const {data, isLoading } = useGetMoviesQuery("avengers") 
-
+  const {data, isLoading, error } = useGetMoviesQuery("avengers") 
 
   return (
     <div className='card-container'>
-        {  isLoading ? <h3>Loading....</h3> : 
-          data.Search?.map((movie: IMovie) => <MovieCard key={movie.imdbID} data={movie}/>)
+        {  
+        error ? <h3>Oops... Algo salio mal :(</h3> :
+        isLoading ? <h3>Loading....</h3> :
+        data.Search?.map((movie: IMovie) => <MovieCard key={movie.imdbID} data={movie}/>)
         }
       
     </div>

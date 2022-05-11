@@ -1,52 +1,56 @@
-import React from 'react'
-import { rest } from 'msw'
-import { setupServer } from 'msw/node'
-import moviesReducer, { IMovie } from "../moviesSlice"
-import { configureStore } from '@reduxjs/toolkit';
-import { Provider } from 'react-redux'
+import { screen } from '@testing-library/react'
+import { rest  } from 'msw'
+import { setupServer } from 'msw/node'  
 import Movies from '../Movies'
-import { render, screen } from '@testing-library/react';
-import { moviesApi } from '../moviesAPI';
+import { IMovie }  from "../moviesSlice"
+import { renderRedux } from './test-utils'
 
-
-function renderRedux(component: React.ReactNode, { initialState = {favs: [], movies:[]} } = {}) {
-  const store = configureStore({ reducer: {movies: moviesReducer, moviesApi: moviesApi.reducer},  middleware: (getDefaultMiddleware) =>
-  getDefaultMiddleware().concat(moviesApi.middleware), });
-  return {
-      ...render( <Provider store={store}>
-        {component}
-      </Provider>)
-  }
-}
-
-
-const movie: IMovie = {Title: "End Game", Poster:"any", imdbID:"7"}
-
-export const handlers = [
-  rest.get('https://www.omdbapi.com/', (req, res, ctx) => {
-    return res(ctx.json(movie), ctx.delay(200))
-  })
-]
+const handlers = [
+  rest.get("https://www.omdbapi.com/", (req, res, ctx)=>{
+      const movies: IMovie[] = [{Title: "Harry Potter", Poster:"any", imdbID:"5"}, {Title: "Facebook", Poster:"any", imdbID:"5"}]
+      const mockResponse = {Search: movies}
+      return res(ctx.json(mockResponse))
+    })
+  ]
 
 const server = setupServer(...handlers)
-
-// Enable API mocking before tests.
+// Establish API mocking before all tests.
 beforeAll(() => server.listen())
-
-// Reset any runtime request handlers we may add during the tests.
+// Reset any request handlers that we may add during the tests,
+// so they don't affect other tests.
 afterEach(() => server.resetHandlers())
-
-// Disable API mocking after the tests are done.
+// Clean up after the tests are finished.
 afterAll(() => server.close())
 
 describe("Movies", ()=>{
-  describe("Fetch data", ()=>{
-    it("should initially show a loading state", ()=>{
+  describe("Initially", ()=>{
+    it("should show a loading state", async()=>{
         renderRedux(<Movies />)
         expect(screen.getByText("Loading....")).toBeInTheDocument()
     })
   })
+  describe("After a few seconds", ()=>{
+    it("should render the show a loading state", async()=>{
+      renderRedux(<Movies />)
+      expect((await screen.findAllByAltText("movie-poster")).length).toBeGreaterThan(0)
+      expect(screen.queryByText("Loading....")).not.toBeInTheDocument()
+    })
+   describe("On error", ()=>{
+     it("should handle the error", async()=>{
+       server.use(
+         rest.get("https://www.omdbapi.com/", (req, res, ctx) => {
+          return res(ctx.status(500))
+        })
+        )
+        renderRedux(<Movies />)
+        expect(screen.getByText("Loading....")).toBeInTheDocument()
+        expect(await screen.findByText("Oops... Algo salio mal :(")).toBeInTheDocument()
+     })
+   })
+  })
 })
+
+
 
 
 
