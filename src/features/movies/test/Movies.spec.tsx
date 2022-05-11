@@ -7,7 +7,7 @@ import { renderRedux } from './test-utils'
 
 const handlers = [
   rest.get("https://www.omdbapi.com/", (req, res, ctx)=>{
-      const movies: IMovie[] = [{Title: "Harry Potter", Poster:"any", imdbID:"5"}, {Title: "Facebook", Poster:"any", imdbID:"5"}]
+      const movies: IMovie[] = [{Title: "Harry Potter", Poster:"any", imdbID:"8"}, {Title: "Facebook", Poster:"any", imdbID:"5"}]
       const mockResponse = {Search: movies}
       return res(ctx.json(mockResponse))
     })
@@ -22,6 +22,10 @@ afterEach(() => server.resetHandlers())
 // Clean up after the tests are finished.
 afterAll(() => server.close())
 
+jest.mock('../MovieCard', ()=>()=>{
+  return <div>Movie Card</div>
+})
+
 describe("Movies", ()=>{
   describe("Initially", ()=>{
     it("should show a loading state", async()=>{
@@ -32,21 +36,21 @@ describe("Movies", ()=>{
   describe("After a few seconds", ()=>{
     it("should render the show a loading state", async()=>{
       renderRedux(<Movies />)
-      expect((await screen.findAllByAltText("movie-poster")).length).toBeGreaterThan(0)
+      expect((await screen.findAllByText("Movie Card")).length).toBeGreaterThan(0)
       expect(screen.queryByText("Loading....")).not.toBeInTheDocument()
     })
-   describe("On error", ()=>{
-     it("should handle the error", async()=>{
-       server.use(
-         rest.get("https://www.omdbapi.com/", (req, res, ctx) => {
-          return res(ctx.status(500))
-        })
-        )
-        renderRedux(<Movies />)
-        expect(screen.getByText("Loading....")).toBeInTheDocument()
-        expect(await screen.findByText("Oops... Algo salio mal :(")).toBeInTheDocument()
-     })
-   })
+  })
+  describe("On error", ()=>{
+    it("should handle the error", async()=>{
+      server.use(
+        rest.get("https://www.omdbapi.com/", (req, res, ctx) => {
+         return res(ctx.status(500))
+       })
+       )
+       renderRedux(<Movies />)
+       expect(screen.getByText("Loading....")).toBeInTheDocument()
+       expect(await screen.findByText("Oops... Algo salio mal :(")).toBeInTheDocument()
+    })
   })
 })
 
