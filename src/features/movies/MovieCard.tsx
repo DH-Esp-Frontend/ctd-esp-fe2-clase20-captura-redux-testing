@@ -23,7 +23,7 @@ const MovieCard = ({data}: ICard) => {
       <div className='card-header'>
         <h3>{data.Title} </h3>
         <button onClick={handleFav} >
-          {!isFav ? <Fav /> : <UnFav /> } 
+          {!isFav ? <Fav data-testid="fav" /> : <UnFav data-testid="un-fav" /> } 
         </button>
       </div>
       <img src={data.Poster} alt="movie-poster" />
